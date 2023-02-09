@@ -9,7 +9,7 @@ import com.artostapyshyn.automarketplace.entity.SaleAdvertisement;
 public interface SaleAdvertisementService {
 	Optional<SaleAdvertisement> findById(Long id);
 	
-	SaleAdvertisement findByCreationDate(LocalDateTime dateOfCreation);
+	SaleAdvertisement findByCreationDate(LocalDateTime creationDate);
 	
 	SaleAdvertisement save(SaleAdvertisement saleAdvertisement);
 

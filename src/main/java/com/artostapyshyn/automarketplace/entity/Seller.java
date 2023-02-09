@@ -2,6 +2,8 @@ package com.artostapyshyn.automarketplace.entity;
 
 import java.util.Set;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -41,6 +43,7 @@ public class Seller {
     private String email;
     
     @OneToMany(mappedBy = "seller")
+    @JsonManagedReference
     private Set<SaleAdvertisement> advertisements;
 	 
 }

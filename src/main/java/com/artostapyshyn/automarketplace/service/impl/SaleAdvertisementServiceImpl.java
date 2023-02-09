@@ -24,8 +24,8 @@ public class SaleAdvertisementServiceImpl implements SaleAdvertisementService {
 	}
 
 	@Override
-	public SaleAdvertisement findByCreationDate(LocalDateTime dateOfCreation) {
-		return saleAdvertisementRepository.findByCreationDate(dateOfCreation);
+	public SaleAdvertisement findByCreationDate(LocalDateTime creationDate) {
+		return saleAdvertisementRepository.findByCreationDate(creationDate);
 	}
 
 	@Override

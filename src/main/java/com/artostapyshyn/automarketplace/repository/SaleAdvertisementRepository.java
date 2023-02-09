@@ -9,5 +9,5 @@ import com.artostapyshyn.automarketplace.entity.SaleAdvertisement;
 
 @Repository
 public interface SaleAdvertisementRepository extends JpaRepository<SaleAdvertisement, Long>{
-	SaleAdvertisement findByCreationDate(LocalDateTime dateOfCreation);
+	SaleAdvertisement findByCreationDate(LocalDateTime creationDate);
 }

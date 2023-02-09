@@ -2,6 +2,8 @@ package com.artostapyshyn.automarketplace.entity;
 
 import java.time.LocalDateTime;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -72,15 +74,16 @@ public class SaleAdvertisement {
 	@Column(name = "last_technical_inspection", nullable = true)
     private String lastTechInspection;
 	
-	@Column(name = "date_of_creation", nullable = false)
-	private LocalDateTime dateOfCreation;
+	@Column(name = "creation_date", nullable = false)
+	private LocalDateTime creationDate;
 
 	@ManyToOne
     @JoinColumn(name = "seller_id", nullable=false)
+	@JsonBackReference
     private Seller seller;
 	
 	@PrePersist
 	private void init() {
-		dateOfCreation = LocalDateTime.now();
+		creationDate = LocalDateTime.now();
 	}
 }

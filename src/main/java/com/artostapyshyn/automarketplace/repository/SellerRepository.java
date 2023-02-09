@@ -9,7 +9,5 @@ import com.artostapyshyn.automarketplace.entity.Seller;
 public interface SellerRepository extends JpaRepository<Seller, Long> {
 	Seller findByPhoneNumber(String phoneNumber);
 	
-	Seller findByName(String name);
-	 
 	Seller findByEmail(String email);
 }
