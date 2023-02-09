@@ -2,10 +2,13 @@ package com.artostapyshyn.automarketplace.entity;
 
 import java.util.Set;
 
+import com.artostapyshyn.automarketplace.enums.Role;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -41,6 +44,10 @@ public class Seller {
 
     @Column(name = "email", nullable = false, unique = true)
     private String email;
+    
+    @Enumerated(EnumType.STRING)
+    @Column(name = "role", nullable = false)
+    private Role role;
     
     @OneToMany(mappedBy = "seller")
     @JsonManagedReference
