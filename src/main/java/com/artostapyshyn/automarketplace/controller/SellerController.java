@@ -6,6 +6,7 @@ import java.util.Optional;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -77,6 +78,7 @@ public class SellerController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 	
+	@PreAuthorize("hasRole('ADMIN')")
 	@DeleteMapping
 	public ResponseEntity<List<Object>> deleteSeller(@PathParam("id") Long id) {
 		List<Object> response = new ArrayList<>();
@@ -86,7 +88,7 @@ public class SellerController {
 		sellerService.deleteById(id);
 		 
 		response.add("Seller with id - " + id + " has been deleted");
-		log.info("Seller wth id - " + id + "has been deleted");
+		log.info("Seller wth id - " + id + " has been deleted");
 		
 		return new ResponseEntity<>(response, HttpStatus.ACCEPTED);
 	}
