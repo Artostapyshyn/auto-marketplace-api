@@ -29,28 +29,22 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
-    	@Bean	
-    	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-    		http
-    			.csrf()
-    			.disable()
-    			.authorizeHttpRequests()
-    			.requestMatchers("/").permitAll() 
-    			.requestMatchers("/sign-up").permitAll() 
-    			.requestMatchers("/sellers/**").permitAll()
-    			.requestMatchers(HttpMethod.DELETE, "/sellers/**").hasRole(Role.ROLE_ADMIN.name())
-    			.anyRequest()
-    			.authenticated()
-    			.and()
-    			.formLogin()
-    			.loginPage("/sign-in").permitAll()
-    			.defaultSuccessUrl("/profile")
-    			.and()
-    			.logout()
-    			.logoutUrl("/logout")
-    			.logoutSuccessUrl("/")
-    			.and()
-    			.httpBasic();
+    @Bean	
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    	http
+    		.authorizeHttpRequests()
+    		.requestMatchers("api/v1/").permitAll() 
+    		.requestMatchers(HttpMethod.POST, "/sign-up").permitAll()
+    		.requestMatchers(HttpMethod.POST, "/sign-in").permitAll() 
+    		.requestMatchers(HttpMethod.GET, "/sellers/**").permitAll()
+    		.requestMatchers(HttpMethod.DELETE, "/sellers/**").hasRole(Role.ROLE_ADMIN.name())
+    		.anyRequest()
+            .authenticated()
+            .and()
+            .httpBasic()
+            .and()
+            .csrf()
+            .disable();
 
 		return http.build();
     }
@@ -61,5 +55,5 @@ public class SecurityConfig {
         	.userDetailsService(userDetailsService)
         	.passwordEncoder(passwordEncoder());
     }
-
+    
 }
