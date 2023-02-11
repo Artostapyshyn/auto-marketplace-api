@@ -44,4 +44,9 @@ public class SaleAdvertisementServiceImpl implements SaleAdvertisementService {
 		saleAdvertisementRepository.deleteById(id);
 	}
 
+	@Override
+	public List<SaleAdvertisement> generateRandomSaleAdvertisements() {
+		return saleAdvertisementRepository.generateRandomSaleAdvertisements();
+	}
+
 }

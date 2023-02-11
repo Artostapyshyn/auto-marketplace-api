@@ -33,13 +33,13 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
     	http
     		.authorizeHttpRequests()
-    		.requestMatchers("api/v1/").permitAll() 
+    		.requestMatchers(HttpMethod.GET, "api/v1/").permitAll() 
     		.requestMatchers(HttpMethod.POST, "/sign-up").permitAll()
     		.requestMatchers(HttpMethod.POST, "/sign-in").permitAll() 
     		.requestMatchers(HttpMethod.GET, "/sellers/**").permitAll()
     		.requestMatchers(HttpMethod.DELETE, "/sellers/**").hasRole(Role.ROLE_ADMIN.name())
     		.anyRequest()
-            .authenticated()
+            .permitAll()
             .and()
             .httpBasic()
             .and()

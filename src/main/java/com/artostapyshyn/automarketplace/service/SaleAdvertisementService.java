@@ -15,5 +15,7 @@ public interface SaleAdvertisementService {
 
 	List<SaleAdvertisement> findAll();
 	
+	List<SaleAdvertisement> generateRandomSaleAdvertisements();
+	
 	void deleteById(Long id);
 }
