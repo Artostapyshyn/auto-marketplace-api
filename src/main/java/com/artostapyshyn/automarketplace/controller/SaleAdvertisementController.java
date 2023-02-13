@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.artostapyshyn.automarketplace.entity.SaleAdvertisement;
+import com.artostapyshyn.automarketplace.exceptions.AdvertisementNotFoundException;
 import com.artostapyshyn.automarketplace.service.SaleAdvertisementService;
 
 import jakarta.websocket.server.PathParam;
@@ -43,7 +44,7 @@ public class SaleAdvertisementController {
 	ResponseEntity<List<Object>> getAdvertisementById(@PathParam("id") Long id) {
 		List<Object> response = new ArrayList<>();
 		Optional<SaleAdvertisement> saleAvertisement = Optional.of(saleAdvertisementService.findById(id)
-				.orElseThrow(() -> new RuntimeException("Couldn't find sale advertisement with id - " + id)));
+				.orElseThrow(() -> new AdvertisementNotFoundException(id.toString())));
 
 		response.add(saleAvertisement.get());
 		log.info("Getting sale advertisement by id - " + id);
@@ -57,7 +58,7 @@ public class SaleAdvertisementController {
 		
 		SaleAdvertisement saleAvertisement = saleAdvertisementService.findByCreationDate(creationDate);
 			if(saleAvertisement == null)
-				throw new RuntimeException("Couldn't find sale advertisement on - " + creationDate);
+				throw new AdvertisementNotFoundException(creationDate.toString());
 
 		response.add(saleAvertisement);
 		log.info("Getting sale advertisement by creationDate - " + creationDate);
@@ -100,7 +101,7 @@ public class SaleAdvertisementController {
 	public ResponseEntity<List<Object>> deleteAdvertisement(@PathParam("id") Long id) {
 		List<Object> response = new ArrayList<>();
 		saleAdvertisementService.findById(id)
-			.orElseThrow(() -> new RuntimeException("Couldn't find seller with id - " + id));
+			.orElseThrow(() -> new AdvertisementNotFoundException(id.toString()));
 
 		saleAdvertisementService.deleteById(id);
 		 

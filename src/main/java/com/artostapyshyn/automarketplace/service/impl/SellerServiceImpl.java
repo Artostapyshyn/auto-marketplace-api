@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.artostapyshyn.automarketplace.entity.Seller;
+import com.artostapyshyn.automarketplace.exceptions.SellerNotFoundException;
 import com.artostapyshyn.automarketplace.repository.SellerRepository;
 import com.artostapyshyn.automarketplace.service.SellerService;
 
@@ -19,7 +20,7 @@ public class SellerServiceImpl implements SellerService{
 	@Override
 	public Optional<Seller> findById(Long id) {
 		return Optional.of(sellerRepository.findById(id)
-				.orElseThrow(() -> new RuntimeException("Could'nt find seller with id - "+ id)));
+				.orElseThrow(() -> new SellerNotFoundException(id.toString())));
 	}
 
 	@Override

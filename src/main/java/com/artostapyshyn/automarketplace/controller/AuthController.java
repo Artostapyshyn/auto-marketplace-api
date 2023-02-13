@@ -6,6 +6,11 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -14,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.artostapyshyn.automarketplace.entity.Seller;
 import com.artostapyshyn.automarketplace.enums.Role;
+import com.artostapyshyn.automarketplace.exceptions.InvalidPasswordException;
 import com.artostapyshyn.automarketplace.service.SellerService;
 
 import jakarta.validation.Valid;
@@ -31,6 +37,30 @@ public class AuthController {
 	
 	@Autowired
 	private PasswordEncoder passwordEncoder;
+	
+	@Autowired
+    private AuthenticationManager authenticationManager;
+
+    @PostMapping("/sign-in")
+    public ResponseEntity<List<Object>> authenticateUser(@Valid @RequestBody Seller seller){
+    	List<Object> response = new ArrayList<>();
+    	
+    	try {
+    	Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
+                seller.getEmail(), seller.getPassword()));
+    	
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+   		} catch (AuthenticationException e) {
+   			log.error("Stack trace {}", e.getMessage());
+   			SecurityContextHolder.getContext().setAuthentication(null);
+   			throw new InvalidPasswordException();
+   		}
+    	
+        log.info("Seller signed-in.");
+        response.add("You're signed-in successfully!");
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+	
 	
 	@PostMapping("/sign-up")
     ResponseEntity<List<Object>> signUpSeller(@Valid @RequestBody Seller seller) {

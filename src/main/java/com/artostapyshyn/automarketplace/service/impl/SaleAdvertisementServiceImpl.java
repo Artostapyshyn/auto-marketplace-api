@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.artostapyshyn.automarketplace.entity.SaleAdvertisement;
+import com.artostapyshyn.automarketplace.exceptions.AdvertisementNotFoundException;
 import com.artostapyshyn.automarketplace.repository.SaleAdvertisementRepository;
 import com.artostapyshyn.automarketplace.service.SaleAdvertisementService;
 
@@ -20,7 +21,7 @@ public class SaleAdvertisementServiceImpl implements SaleAdvertisementService {
 	@Override
 	public Optional<SaleAdvertisement> findById(Long id) {
 		return Optional.of(saleAdvertisementRepository.findById(id)
-				.orElseThrow(() -> new RuntimeException("Couldn't find sale advertisement with id - "+ id)));
+				.orElseThrow(() -> new AdvertisementNotFoundException(id.toString())));
 	}
 
 	@Override

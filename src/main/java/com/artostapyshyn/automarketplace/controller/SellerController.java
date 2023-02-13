@@ -7,12 +7,17 @@ import java.util.Optional;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.artostapyshyn.automarketplace.entity.Seller;
+import com.artostapyshyn.automarketplace.exceptions.SellerNotFoundException;
 import com.artostapyshyn.automarketplace.service.SellerService;
 
 import jakarta.websocket.server.PathParam;
@@ -40,7 +45,7 @@ public class SellerController {
 	ResponseEntity<List<Object>> getSellerById(@PathParam("id") Long id) {
 		List<Object> response = new ArrayList<>();
 		Optional<Seller> seller = Optional.of(sellerService.findById(id)
-				.orElseThrow(() -> new RuntimeException("Couldn't find seller with id - " + id)));
+				.orElseThrow(() -> new SellerNotFoundException(id.toString())));
 
 		response.add(seller.get());
 		log.info("Getting seller by id - " + id);
@@ -54,7 +59,7 @@ public class SellerController {
 		Seller seller = sellerService.findByEmail(email);
 		
 		if(seller == null) {
-			throw new RuntimeException("Couldn't find seller with email - " + email);
+			throw new SellerNotFoundException(email);
 		}
 				 
 		response.add(seller);
@@ -69,7 +74,7 @@ public class SellerController {
 		Seller seller = sellerService.findByPhoneNumber(phoneNumber);
 		
 		if(seller == null) {
-			throw new RuntimeException("Couldn't find seller with phone number - " + phoneNumber);
+			throw new SellerNotFoundException(phoneNumber);
 		}
 				 
 		response.add(seller);
@@ -78,12 +83,50 @@ public class SellerController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 	
+	@PreAuthorize("hasAnyRole('SELLER', 'ADMIN')")
+	@PostMapping("/edit{id}")
+	ResponseEntity<List<Object>> editSellerInfo(@RequestBody Seller seller, @PathParam("id") Long id) {
+		List<Object> response = new ArrayList<>();
+
+		Authentication loggedInSeller = SecurityContextHolder.getContext().getAuthentication();
+		String email = loggedInSeller.getName();
+
+		Seller s  = sellerService.findByEmail(email);
+		Long currentSellerId = s.getId();
+		
+		if(currentSellerId == id) {
+		seller.setId(currentSellerId);
+		Seller existingSeller = sellerService.findById(seller.getId()).get();
+
+		editPersonalInfo(seller, existingSeller);
+
+		Seller updatedSeller = sellerService.save(existingSeller);
+		response.add(updatedSeller);
+		log.info("Seller information updated.");
+		} else {
+			throw new RuntimeException("You could edit only own information!");
+		}
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+	
+	private void editPersonalInfo(Seller seller, Seller existingSeller) {
+		existingSeller.setFirstName(seller.getFirstName());
+		existingSeller.setLastName(seller.getLastName());
+		
+		if(sellerService.findByEmail(seller.getEmail()) == null) {
+			existingSeller.setEmail(seller.getEmail());
+		} else {
+			throw new RuntimeException("Email already exists, try another one.");
+		}
+		existingSeller.setPhoneNumber(seller.getPhoneNumber());
+	}
+
 	@PreAuthorize("hasRole('ADMIN')")
 	@DeleteMapping("/{id}")
 	public ResponseEntity<List<Object>> deleteSeller(@PathParam("id") Long id) {
 		List<Object> response = new ArrayList<>();
 		sellerService.findById(id)
-			.orElseThrow(() -> new RuntimeException("Couldn't find seller with id - " + id));
+			.orElseThrow(() -> new SellerNotFoundException(id.toString()));
 
 		sellerService.deleteById(id);
 		 
