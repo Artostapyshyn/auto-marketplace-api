@@ -79,7 +79,7 @@ public class SellerController {
 	}
 	
 	@PreAuthorize("hasRole('ADMIN')")
-	@DeleteMapping
+	@DeleteMapping("/{id}")
 	public ResponseEntity<List<Object>> deleteSeller(@PathParam("id") Long id) {
 		List<Object> response = new ArrayList<>();
 		sellerService.findById(id)

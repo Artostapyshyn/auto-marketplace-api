@@ -20,7 +20,7 @@ public class SaleAdvertisementServiceImpl implements SaleAdvertisementService {
 	@Override
 	public Optional<SaleAdvertisement> findById(Long id) {
 		return Optional.of(saleAdvertisementRepository.findById(id)
-				.orElseThrow(() -> new RuntimeException("Could'nt find sale advertisement with id - "+ id)));
+				.orElseThrow(() -> new RuntimeException("Couldn't find sale advertisement with id - "+ id)));
 	}
 
 	@Override
