@@ -27,7 +27,7 @@ import lombok.Setter;
 @Setter
 @Builder
 public class SaleAdvertisement {
-	
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id; 
@@ -78,7 +78,7 @@ public class SaleAdvertisement {
 	private LocalDateTime creationDate;
 
 	@ManyToOne
-    @JoinColumn(name = "seller_id", nullable=false)
+    @JoinColumn(name = "seller_id")
 	@JsonBackReference
     private Seller seller;
 	

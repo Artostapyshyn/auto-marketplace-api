@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.artostapyshyn.automarketplace.entity.Seller;
+import com.artostapyshyn.automarketplace.exceptions.AdvertisementNotFoundException;
 import com.artostapyshyn.automarketplace.exceptions.SellerNotFoundException;
 import com.artostapyshyn.automarketplace.service.SellerService;
 
@@ -33,28 +35,40 @@ public class SellerController {
 	private final SellerService sellerService;
 	
 	@GetMapping
-	public ResponseEntity<List<Object>> getAllSellers() {
+	public ResponseEntity<List<Object>> getAllSellers(@PathParam("id") Long id, @PathParam("email") String email, @PathParam("phoneNumber") String phoneNumber) {
 		List<Object> response = new ArrayList<>();
-		response.add(sellerService.findAll());
+	 
+		if (id != null) {
+            return getSellerById(id);
+		} else if(email != null) {
+			return getSellerByEmail(email);
+		} else if(phoneNumber != null) {
+			return getSellerByPhoneNumber(phoneNumber);
+		}
+
+		response.add(sellerService.findAll(Sort.by(Sort.Direction.ASC, "id")));
 		
 		log.info("Listing all sellers");
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 	
-	@GetMapping("/{id}")
-	ResponseEntity<List<Object>> getSellerById(@PathParam("id") Long id) {
+	@GetMapping("{id}")
+	ResponseEntity<List<Object>> getSellerById(Long id) {
 		List<Object> response = new ArrayList<>();
-		Optional<Seller> seller = Optional.of(sellerService.findById(id)
-				.orElseThrow(() -> new SellerNotFoundException(id.toString())));
-
-		response.add(seller.get());
-		log.info("Getting seller by id - " + id);
+		Optional<Seller> seller = sellerService.findById(id);
 		
-		return new ResponseEntity<>(response, HttpStatus.OK);
+		if (seller.isEmpty()) {
+			throw new AdvertisementNotFoundException(id.toString());
+		} else {
+			response.add(seller.get());
+			log.info("Getting seller by id - " + id);
+		
+			return new ResponseEntity<>(response, HttpStatus.OK);
+		}
 	}
 	
-	@GetMapping("/{email}")
-	ResponseEntity<List<Object>> getSellerByEmail(@PathParam("email") String email) {
+	@GetMapping("{email}")
+	ResponseEntity<List<Object>> getSellerByEmail(String email) {
 		List<Object> response = new ArrayList<>();
 		Seller seller = sellerService.findByEmail(email);
 		
@@ -68,8 +82,8 @@ public class SellerController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 	
-	@GetMapping("/{phoneNumber}")
-	ResponseEntity<List<Object>> getSellerByPhoneNumber(@PathParam("phoneNumber") String phoneNumber) {
+	@GetMapping("{phoneNumber}")
+	ResponseEntity<List<Object>> getSellerByPhoneNumber(String phoneNumber) {
 		List<Object> response = new ArrayList<>();
 		Seller seller = sellerService.findByPhoneNumber(phoneNumber);
 		
@@ -88,11 +102,7 @@ public class SellerController {
 	ResponseEntity<List<Object>> editSellerInfo(@RequestBody Seller seller, @PathParam("id") Long id) {
 		List<Object> response = new ArrayList<>();
 
-		Authentication loggedInSeller = SecurityContextHolder.getContext().getAuthentication();
-		String email = loggedInSeller.getName();
-
-		Seller s  = sellerService.findByEmail(email);
-		Long currentSellerId = s.getId();
+		Long currentSellerId = checkPermission();
 		
 		if(currentSellerId == id) {
 		seller.setId(currentSellerId);
@@ -107,6 +117,15 @@ public class SellerController {
 			throw new RuntimeException("You could edit only own information!");
 		}
 		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	public Long checkPermission() {
+		Authentication loggedInSeller = SecurityContextHolder.getContext().getAuthentication();
+		String email = loggedInSeller.getName();
+
+		Seller s  = sellerService.findByEmail(email);
+		Long currentSellerId = s.getId();
+		return currentSellerId;
 	}
 	
 	private void editPersonalInfo(Seller seller, Seller existingSeller) {

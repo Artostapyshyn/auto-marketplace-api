@@ -1,6 +1,5 @@
 package com.artostapyshyn.automarketplace.repository;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -11,7 +10,11 @@ import com.artostapyshyn.automarketplace.entity.SaleAdvertisement;
 
 @Repository
 public interface SaleAdvertisementRepository extends JpaRepository<SaleAdvertisement, Long>{
-	SaleAdvertisement findByCreationDate(LocalDateTime creationDate);
+	List<SaleAdvertisement> findByType(String type);
+	
+	List<SaleAdvertisement> findByBrand(String brand);
+	
+	List<SaleAdvertisement> findByProductionYear(int year);
 	
 	@Query(nativeQuery=true, value="SELECT * FROM sale_advertisements ORDER BY random() LIMIT 15")
 	List<SaleAdvertisement> generateRandomSaleAdvertisements();

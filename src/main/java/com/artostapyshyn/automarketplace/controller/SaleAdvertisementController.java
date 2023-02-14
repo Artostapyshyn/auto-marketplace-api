@@ -1,13 +1,15 @@
 package com.artostapyshyn.automarketplace.controller;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -18,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.artostapyshyn.automarketplace.entity.SaleAdvertisement;
 import com.artostapyshyn.automarketplace.exceptions.AdvertisementNotFoundException;
 import com.artostapyshyn.automarketplace.service.SaleAdvertisementService;
+import com.artostapyshyn.automarketplace.service.SellerService;
 
 import jakarta.websocket.server.PathParam;
 import lombok.AllArgsConstructor;
@@ -25,58 +28,115 @@ import lombok.extern.log4j.Log4j2;
 
 @Log4j2
 @RestController
-@RequestMapping("api/v1/sale-advertisement")
+@RequestMapping("api/v1/sale-advertisements")
 @AllArgsConstructor
 public class SaleAdvertisementController {
 
-	private final SaleAdvertisementService saleAdvertisementService;
+	public final SaleAdvertisementService saleAdvertisementService;
 	
+	public final SellerService sellerService;
+
 	@GetMapping
-	public ResponseEntity<List<Object>> getAllAdvertisements() {
+	public ResponseEntity<List<Object>> getAllAdvertisements(@PathParam("id") Long id, @PathParam("brand") String brand, 
+										@PathParam("type") String type, @PathParam("year") Integer year ) {
 		List<Object> response = new ArrayList<>();
-		response.add(saleAdvertisementService.findAll());
+		
+		if (id != null) {
+            return getAdvertisementById(id);
+		} else if(type != null) {
+			return getAdvertisementByType(type);
+		} else if(brand != null) {
+			return getAdvertisementByBrand(brand);
+		} else if (year != null) {
+			return getAdvertisementByProductionYear(year);
+		}
+		
+		response.add(saleAdvertisementService.findAll(Sort.by(Sort.Direction.ASC, "id")));
 		
 		log.info("Listing all sale advertisements");
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 	
-	@GetMapping("/{id}")
-	ResponseEntity<List<Object>> getAdvertisementById(@PathParam("id") Long id) {
+	@GetMapping("{id}")
+	ResponseEntity<List<Object>> getAdvertisementById(Long id) {
 		List<Object> response = new ArrayList<>();
-		Optional<SaleAdvertisement> saleAvertisement = Optional.of(saleAdvertisementService.findById(id)
-				.orElseThrow(() -> new AdvertisementNotFoundException(id.toString())));
-
-		response.add(saleAvertisement.get());
-		log.info("Getting sale advertisement by id - " + id);
+		Optional<SaleAdvertisement> saleAdvertisementById = saleAdvertisementService.findById(id);
 		
-		return new ResponseEntity<>(response, HttpStatus.OK);
+		if (saleAdvertisementById.isEmpty()) {
+			throw new AdvertisementNotFoundException(id.toString());
+		} else {
+			response.add(saleAdvertisementById.get());
+			log.info("Getting sale advertisement by id - " + id);
+
+			return new ResponseEntity<>(response, HttpStatus.OK);
+		}
 	}
 	
-	@GetMapping("/{creationDate}")
-	ResponseEntity<List<Object>> getAdvertisementByDate(@PathParam("creationDate") LocalDateTime creationDate) {
+	@GetMapping("{brand}")
+	ResponseEntity<List<Object>> getAdvertisementByBrand(String brand) {
 		List<Object> response = new ArrayList<>();
-		
-		SaleAdvertisement saleAvertisement = saleAdvertisementService.findByCreationDate(creationDate);
-			if(saleAvertisement == null)
-				throw new AdvertisementNotFoundException(creationDate.toString());
+		List<SaleAdvertisement> saleAdvertisementByBrand = saleAdvertisementService.findByBrand(brand);
+			
+		if (saleAdvertisementByBrand.isEmpty()) {
+			throw new AdvertisementNotFoundException(brand);
+		} else {
+			response.add(saleAdvertisementByBrand);
+			log.info("Listing sale advertisements with vehicle brand - " + brand);
 
-		response.add(saleAvertisement);
-		log.info("Getting sale advertisement by creationDate - " + creationDate);
-		
-		return new ResponseEntity<>(response, HttpStatus.OK);
+			return new ResponseEntity<>(response, HttpStatus.OK);
+		}
 	}
+	
+	@GetMapping("{type}")
+	ResponseEntity<List<Object>> getAdvertisementByType(String type) {
+		List<Object> response = new ArrayList<>();
+		List<SaleAdvertisement> saleAdvertisementByType = saleAdvertisementService.findByType(type);
+			
+		if (saleAdvertisementByType.isEmpty()) {
+			throw new AdvertisementNotFoundException(type);
+		} else {
+			response.add(saleAdvertisementByType);
+			log.info("Getting all sale advertisements with type - " + type);
+
+			return new ResponseEntity<>(response, HttpStatus.OK);
+		}
+	}
+	 
+	@GetMapping("{year}")
+	ResponseEntity<List<Object>> getAdvertisementByProductionYear(int year) {
+		List<Object> response = new ArrayList<>();
+		List<SaleAdvertisement> saleAdvertisementByYear = saleAdvertisementService.findByProductionYear(year);
+			
+		if (saleAdvertisementByYear.isEmpty()) {
+			throw new AdvertisementNotFoundException("Couldn't find any sale advertisements with year" + year);
+		} else {
+			response.add(saleAdvertisementByYear);
+			log.info("Listing sale advertisements by vehicle production year - " + year);
+
+			return new ResponseEntity<>(response, HttpStatus.OK);
+		}
+	} 
 	
 	@PreAuthorize("hasRole('SELLER')")
 	@PostMapping("/add")
 	ResponseEntity<List<Object>> addAdvertisement(@RequestBody SaleAdvertisement saleAdvertisement) {
 		List<Object> response = new ArrayList<>();
 
+		String currentSellerEmail = checkPermission();
+		
+		saleAdvertisement.setSeller(sellerService.findByEmail(currentSellerEmail));
 		SaleAdvertisement newSaleAdvertisement = saleAdvertisementService.save(saleAdvertisement);
 		 
 		response.add(newSaleAdvertisement);
 		log.info("New sale advertisement added");
 		
 		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+	
+	private String checkPermission() {
+		Authentication loggedInSeller = SecurityContextHolder.getContext().getAuthentication();
+		String email = loggedInSeller.getName();
+		return email;
 	}
 	
 	@PreAuthorize("hasAnyRole('SELLER', 'ADMIN')")
@@ -118,13 +178,10 @@ public class SaleAdvertisementController {
 		existingSaleAdvertisement.setCity(saleAdvertisement.getCity());
 		existingSaleAdvertisement.setColor(saleAdvertisement.getColor());
 		existingSaleAdvertisement.setEngineCapacity(saleAdvertisement.getEngineCapacity());
-		existingSaleAdvertisement.setVinCode(saleAdvertisement.getVinCode());
 		existingSaleAdvertisement.setDescription(saleAdvertisement.getDescription());
-		existingSaleAdvertisement.setLastTechInspection(saleAdvertisement.getLastTechInspection());
 		existingSaleAdvertisement.setPrice(saleAdvertisement.getPrice());
 		existingSaleAdvertisement.setProductionYear(saleAdvertisement.getProductionYear());
 		existingSaleAdvertisement.setType(saleAdvertisement.getBodyType());
-		existingSaleAdvertisement.setVehiclePlateNumber(saleAdvertisement.getVehiclePlateNumber());
 		existingSaleAdvertisement.setModel(saleAdvertisement.getModel());
 	} 
 }

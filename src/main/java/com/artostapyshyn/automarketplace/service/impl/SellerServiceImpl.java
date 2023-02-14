@@ -4,10 +4,10 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import com.artostapyshyn.automarketplace.entity.Seller;
-import com.artostapyshyn.automarketplace.exceptions.SellerNotFoundException;
 import com.artostapyshyn.automarketplace.repository.SellerRepository;
 import com.artostapyshyn.automarketplace.service.SellerService;
 
@@ -19,8 +19,7 @@ public class SellerServiceImpl implements SellerService{
 	
 	@Override
 	public Optional<Seller> findById(Long id) {
-		return Optional.of(sellerRepository.findById(id)
-				.orElseThrow(() -> new SellerNotFoundException(id.toString())));
+		return sellerRepository.findById(id);
 	}
 
 	@Override
@@ -39,7 +38,7 @@ public class SellerServiceImpl implements SellerService{
 	}
 
 	@Override
-	public List<Seller> findAll() {
+	public List<Seller> findAll(Sort sort) {
 		 return sellerRepository.findAll().stream()
 				 .toList();
 	}

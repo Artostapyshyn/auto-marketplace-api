@@ -1,14 +1,13 @@
 package com.artostapyshyn.automarketplace.service.impl;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import com.artostapyshyn.automarketplace.entity.SaleAdvertisement;
-import com.artostapyshyn.automarketplace.exceptions.AdvertisementNotFoundException;
 import com.artostapyshyn.automarketplace.repository.SaleAdvertisementRepository;
 import com.artostapyshyn.automarketplace.service.SaleAdvertisementService;
 
@@ -20,13 +19,7 @@ public class SaleAdvertisementServiceImpl implements SaleAdvertisementService {
 	
 	@Override
 	public Optional<SaleAdvertisement> findById(Long id) {
-		return Optional.of(saleAdvertisementRepository.findById(id)
-				.orElseThrow(() -> new AdvertisementNotFoundException(id.toString())));
-	}
-
-	@Override
-	public SaleAdvertisement findByCreationDate(LocalDateTime creationDate) {
-		return saleAdvertisementRepository.findByCreationDate(creationDate);
+		return saleAdvertisementRepository.findById(id);
 	}
 
 	@Override
@@ -35,7 +28,7 @@ public class SaleAdvertisementServiceImpl implements SaleAdvertisementService {
 	}
 
 	@Override
-	public List<SaleAdvertisement> findAll() {
+	public List<SaleAdvertisement> findAll(Sort sort) {
 		return saleAdvertisementRepository.findAll().stream()
 				.toList();
 	}
@@ -48,6 +41,24 @@ public class SaleAdvertisementServiceImpl implements SaleAdvertisementService {
 	@Override
 	public List<SaleAdvertisement> generateRandomSaleAdvertisements() {
 		return saleAdvertisementRepository.generateRandomSaleAdvertisements();
+	}
+
+	@Override
+	public List<SaleAdvertisement> findByType(String type) {
+		return  saleAdvertisementRepository.findByType(type).stream()
+				.toList();
+	}
+
+	@Override
+	public List<SaleAdvertisement> findByBrand(String brand) {
+		return saleAdvertisementRepository.findByBrand(brand).stream()
+				.toList();
+	}
+
+	@Override
+	public List<SaleAdvertisement> findByProductionYear(int year) {
+		return saleAdvertisementRepository.findByProductionYear(year).stream()
+				.toList();
 	}
 
 }

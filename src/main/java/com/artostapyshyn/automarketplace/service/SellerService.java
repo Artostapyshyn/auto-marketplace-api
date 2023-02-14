@@ -3,6 +3,8 @@ package com.artostapyshyn.automarketplace.service;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.Sort;
+
 import com.artostapyshyn.automarketplace.entity.Seller;
 
 public interface SellerService {
@@ -14,7 +16,7 @@ public interface SellerService {
 	
 	Seller save(Seller seller);
 
-	List<Seller> findAll();
+	List<Seller> findAll(Sort sort);
 	
 	void deleteById(Long id);
 }
