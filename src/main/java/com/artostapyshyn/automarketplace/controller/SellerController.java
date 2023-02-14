@@ -22,6 +22,7 @@ import com.artostapyshyn.automarketplace.exceptions.AdvertisementNotFoundExcepti
 import com.artostapyshyn.automarketplace.exceptions.SellerNotFoundException;
 import com.artostapyshyn.automarketplace.service.SellerService;
 
+import jakarta.validation.Valid;
 import jakarta.websocket.server.PathParam;
 import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -35,7 +36,7 @@ public class SellerController {
 	private final SellerService sellerService;
 	
 	@GetMapping
-	public ResponseEntity<List<Object>> getAllSellers(@PathParam("id") Long id, @PathParam("email") String email, @PathParam("phoneNumber") String phoneNumber) {
+	public ResponseEntity<List<Object>> getAllSellers(@PathParam("id") Long id, @Valid @PathParam("email") String email, @Valid @PathParam("phoneNumber") String phoneNumber) {
 		List<Object> response = new ArrayList<>();
 	 
 		if (id != null) {
@@ -99,7 +100,7 @@ public class SellerController {
 	
 	@PreAuthorize("hasAnyRole('SELLER', 'ADMIN')")
 	@PostMapping("/edit{id}")
-	ResponseEntity<List<Object>> editSellerInfo(@RequestBody Seller seller, @PathParam("id") Long id) {
+	ResponseEntity<List<Object>> editSellerInfo(@Valid @RequestBody Seller seller, @PathParam("id") Long id) {
 		List<Object> response = new ArrayList<>();
 
 		Long currentSellerId = checkPermission();

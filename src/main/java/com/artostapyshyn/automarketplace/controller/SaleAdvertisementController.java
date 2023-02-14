@@ -22,6 +22,7 @@ import com.artostapyshyn.automarketplace.exceptions.AdvertisementNotFoundExcepti
 import com.artostapyshyn.automarketplace.service.SaleAdvertisementService;
 import com.artostapyshyn.automarketplace.service.SellerService;
 
+import jakarta.validation.Valid;
 import jakarta.websocket.server.PathParam;
 import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -119,7 +120,7 @@ public class SaleAdvertisementController {
 	
 	@PreAuthorize("hasRole('SELLER')")
 	@PostMapping("/add")
-	ResponseEntity<List<Object>> addAdvertisement(@RequestBody SaleAdvertisement saleAdvertisement) {
+	ResponseEntity<List<Object>> addAdvertisement(@Valid @RequestBody SaleAdvertisement saleAdvertisement) {
 		List<Object> response = new ArrayList<>();
 
 		String currentSellerEmail = checkPermission();
@@ -141,7 +142,7 @@ public class SaleAdvertisementController {
 	
 	@PreAuthorize("hasAnyRole('SELLER', 'ADMIN')")
 	@PostMapping("/edit/{id}")
-	ResponseEntity<List<Object>> editAdvertisement(@RequestBody SaleAdvertisement saleAdvertisement, @PathParam("id") Long id) {
+	ResponseEntity<List<Object>> editAdvertisement(@Valid @RequestBody SaleAdvertisement saleAdvertisement, @PathParam("id") Long id) {
 		List<Object> response = new ArrayList<>();
 
 		saleAdvertisement.setId(id);

@@ -3,6 +3,8 @@ package com.artostapyshyn.automarketplace.entity;
 import java.util.Set;
 
 import com.artostapyshyn.automarketplace.enums.Role;
+import com.artostapyshyn.automarketplace.validation.UniqueEmail;
+import com.artostapyshyn.automarketplace.validation.UniquePhoneNumber;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import jakarta.persistence.Column;
@@ -14,6 +16,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -39,10 +42,16 @@ public class Seller {
     @Column(name = "last_name", nullable = false)
     private String lastName;
 	 
-    @Column(name = "phone_number", nullable = false, unique = true)
+    @UniquePhoneNumber
+    @Pattern(regexp = "^(\\+\\d{1,3}( )?)?((\\(\\d{3}\\))|\\d{3})[- .]?\\d{3}[- .]?\\d{4}$"
+            + "|^(\\+\\d{1,3}( )?)?(\\d{3}[ ]?){2}\\d{3}$"
+            + "|^(\\+\\d{1,3}( )?)?(\\d{3}[ ]?)(\\d{2}[ ]?){2}\\d{2}$",
+    message = "Phone number is not valid. Format example: +12334495788")
+    @Column(name = "phone_number", nullable = false)
     private String phoneNumber;
 
-    @Column(name = "email", nullable = false, unique = true)
+    @UniqueEmail
+    @Column(name = "email", nullable = false)
     private String email;
     
     @Column(name = "password", nullable = false)
