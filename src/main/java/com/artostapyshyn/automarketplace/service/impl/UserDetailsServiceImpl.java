@@ -2,6 +2,7 @@ package com.artostapyshyn.automarketplace.service.impl;
 
 import java.util.Set;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -14,10 +15,10 @@ import lombok.AllArgsConstructor;
 
 
 @Service
-@AllArgsConstructor
 public class UserDetailsServiceImpl implements UserDetailsService {
-
-    private final SellerRepository sellerRepository;
+	
+	@Autowired
+    private SellerRepository sellerRepository;
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {

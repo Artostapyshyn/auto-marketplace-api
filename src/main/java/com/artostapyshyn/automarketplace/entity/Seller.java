@@ -3,8 +3,6 @@ package com.artostapyshyn.automarketplace.entity;
 import java.util.Set;
 
 import com.artostapyshyn.automarketplace.enums.Role;
-import com.artostapyshyn.automarketplace.validation.UniqueEmail;
-import com.artostapyshyn.automarketplace.validation.UniquePhoneNumber;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import jakarta.persistence.Column;
@@ -42,7 +40,7 @@ public class Seller {
     @Column(name = "last_name", nullable = false)
     private String lastName;
 	 
-    @UniquePhoneNumber
+  //  @UniquePhoneNumber
     @Pattern(regexp = "^(\\+\\d{1,3}( )?)?((\\(\\d{3}\\))|\\d{3})[- .]?\\d{3}[- .]?\\d{4}$"
             + "|^(\\+\\d{1,3}( )?)?(\\d{3}[ ]?){2}\\d{3}$"
             + "|^(\\+\\d{1,3}( )?)?(\\d{3}[ ]?)(\\d{2}[ ]?){2}\\d{2}$",
@@ -50,7 +48,8 @@ public class Seller {
     @Column(name = "phone_number", nullable = false)
     private String phoneNumber;
 
-    @UniqueEmail
+  //  @Email
+   // @UniqueEmailAddress
     @Column(name = "email", nullable = false)
     private String email;
     

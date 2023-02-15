@@ -1,19 +1,21 @@
 package com.artostapyshyn.automarketplace.validation;
 
+import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import org.hibernate.validator.internal.constraintvalidators.bv.EmailValidator;
+import com.artostapyshyn.automarketplace.validation.impl.EmailAddressValidator;
 
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;
 
-@Constraint(validatedBy = EmailValidator.class)
-@Target({ElementType.METHOD, ElementType.FIELD, ElementType.ANNOTATION_TYPE, ElementType.CONSTRUCTOR, ElementType.PARAMETER, ElementType.TYPE_USE})
+@Documented
+@Constraint(validatedBy = EmailAddressValidator.class)
+@Target({ElementType.FIELD, ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface UniqueEmail {
+public @interface UniqueEmailAddress {
 
     String message() default "Email is already exists.";
 

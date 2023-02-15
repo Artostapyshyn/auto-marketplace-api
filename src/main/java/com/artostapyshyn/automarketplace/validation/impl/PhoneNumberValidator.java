@@ -9,7 +9,7 @@ import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 public class PhoneNumberValidator implements ConstraintValidator<UniquePhoneNumber, String> {
-
+	
     private final SellerRepository sellerRepository;
 
     @Override

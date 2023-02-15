@@ -18,10 +18,16 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.artostapyshyn.automarketplace.entity.Seller;
-import com.artostapyshyn.automarketplace.exceptions.AdvertisementNotFoundException;
 import com.artostapyshyn.automarketplace.exceptions.SellerNotFoundException;
 import com.artostapyshyn.automarketplace.service.SellerService;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import jakarta.websocket.server.PathParam;
 import lombok.AllArgsConstructor;
@@ -30,36 +36,36 @@ import lombok.extern.log4j.Log4j2;
 @Log4j2
 @RestController
 @RequestMapping("api/v1/sellers")
+@SecurityRequirement(name = "auto-marketplace")
 @AllArgsConstructor
 public class SellerController {
 	
 	private final SellerService sellerService;
 	
+	@Operation(summary = "Get all sellers")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "Found sellers", content = {
+					@Content(mediaType = "application/json", schema = @Schema(implementation = Seller.class)) }) })
 	@GetMapping
-	public ResponseEntity<List<Object>> getAllSellers(@PathParam("id") Long id, @Valid @PathParam("email") String email, @Valid @PathParam("phoneNumber") String phoneNumber) {
+	public ResponseEntity<List<Object>> getAllSellers() {
 		List<Object> response = new ArrayList<>();
-	 
-		if (id != null) {
-            return getSellerById(id);
-		} else if(email != null) {
-			return getSellerByEmail(email);
-		} else if(phoneNumber != null) {
-			return getSellerByPhoneNumber(phoneNumber);
-		}
-
 		response.add(sellerService.findAll(Sort.by(Sort.Direction.ASC, "id")));
 		
 		log.info("Listing all sellers");
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 	
-	@GetMapping("{id}")
-	ResponseEntity<List<Object>> getSellerById(Long id) {
+	@Operation(summary = "Get a seller by it's id")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "Found the seller", content = {
+					@Content(mediaType = "application/json", schema = @Schema(implementation = Seller.class)) })})
+	@GetMapping("/find-by-id{id}")
+	ResponseEntity<List<Object>> getSellerById(@PathParam("id") Long id) {
 		List<Object> response = new ArrayList<>();
 		Optional<Seller> seller = sellerService.findById(id);
 		
 		if (seller.isEmpty()) {
-			throw new AdvertisementNotFoundException(id.toString());
+			throw new SellerNotFoundException(id.toString());
 		} else {
 			response.add(seller.get());
 			log.info("Getting seller by id - " + id);
@@ -68,8 +74,12 @@ public class SellerController {
 		}
 	}
 	
-	@GetMapping("{email}")
-	ResponseEntity<List<Object>> getSellerByEmail(String email) {
+	@Operation(summary = "Get a seller by it's email")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "Found the seller", content = {
+					@Content(mediaType = "application/json", schema = @Schema(implementation = Seller.class)) })})
+	@GetMapping("/find-by-email{email}")
+	ResponseEntity<List<Object>> getSellerByEmail(@PathParam("email") String email) {
 		List<Object> response = new ArrayList<>();
 		Seller seller = sellerService.findByEmail(email);
 		
@@ -83,8 +93,12 @@ public class SellerController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 	
-	@GetMapping("{phoneNumber}")
-	ResponseEntity<List<Object>> getSellerByPhoneNumber(String phoneNumber) {
+	@Operation(summary = "Get a seller by it's phone number")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "Found the seller", content = {
+					@Content(mediaType = "application/json", schema = @Schema(implementation = Seller.class)) }) })
+	@GetMapping("/find-by-phoneNumber{phoneNumber}")
+	ResponseEntity<List<Object>> getSellerByPhoneNumber(@PathParam("phoneNumber") String phoneNumber) {
 		List<Object> response = new ArrayList<>();
 		Seller seller = sellerService.findByPhoneNumber(phoneNumber);
 		
@@ -141,6 +155,11 @@ public class SellerController {
 		existingSeller.setPhoneNumber(seller.getPhoneNumber());
 	}
 
+	@Operation(summary = "Delete seller by id.")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "Delete seller by id", content = {
+					@Content(mediaType = "application/json", examples = @ExampleObject(value = "[\r\n"
+							+ "  \"Seller with id - id has been deleted\"\r\n" + "]")) }) })
 	@PreAuthorize("hasRole('ADMIN')")
 	@DeleteMapping("/{id}")
 	public ResponseEntity<List<Object>> deleteSeller(@PathParam("id") Long id) {

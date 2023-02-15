@@ -23,14 +23,19 @@ import com.artostapyshyn.automarketplace.enums.Role;
 import com.artostapyshyn.automarketplace.exceptions.InvalidPasswordException;
 import com.artostapyshyn.automarketplace.service.SellerService;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
-import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 
 @Log4j2
 @RestController
 @RequestMapping("api/v1")
-@AllArgsConstructor
+@SecurityRequirement(name = "auto-marketplace")
 public class AuthController {
 	
 	@Autowired
@@ -42,6 +47,16 @@ public class AuthController {
 	@Autowired
     private AuthenticationManager authenticationManager;
 
+	@Operation(summary = "Sign-in to upload sale advertisements.")
+	@ApiResponses(value = {
+            @ApiResponse(responseCode = "200",
+            description = "Message about successful login",
+            content = {@Content(mediaType = "application/json", 
+            examples = @ExampleObject(
+            		value = "[\r\n"
+            				+ "  \"You're signed-in successfully!\"\r\n"
+            				+ "]")
+             )})  })
     @PostMapping("/sign-in")
     public ResponseEntity<List<Object>> authenticateUser(@Valid @RequestBody Seller seller){
     	List<Object> response = new ArrayList<>();
@@ -62,7 +77,16 @@ public class AuthController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 	
-	
+	@Operation(summary = "Sign-up new seller account.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200",
+            description = "Message about successful registration",
+            content = {@Content(mediaType = "application/json", 
+            examples = @ExampleObject(
+            		value = "[\r\n"
+            				+ "  \"You're successfully registered!\"\r\n"
+            				+ "]")
+             )}) })
 	@PostMapping("/sign-up")
     ResponseEntity<List<Object>> signUpSeller(@Valid @RequestBody Seller seller) {
         List<Object> response = new ArrayList<>();

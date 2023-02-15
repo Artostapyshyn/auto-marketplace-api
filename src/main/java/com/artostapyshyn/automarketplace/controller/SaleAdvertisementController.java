@@ -22,6 +22,13 @@ import com.artostapyshyn.automarketplace.exceptions.AdvertisementNotFoundExcepti
 import com.artostapyshyn.automarketplace.service.SaleAdvertisementService;
 import com.artostapyshyn.automarketplace.service.SellerService;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import jakarta.websocket.server.PathParam;
 import lombok.AllArgsConstructor;
@@ -30,6 +37,7 @@ import lombok.extern.log4j.Log4j2;
 @Log4j2
 @RestController
 @RequestMapping("api/v1/sale-advertisements")
+@SecurityRequirement(name = "auto-marketplace")
 @AllArgsConstructor
 public class SaleAdvertisementController {
 
@@ -37,29 +45,24 @@ public class SaleAdvertisementController {
 	
 	public final SellerService sellerService;
 
+	@Operation(summary = "Get all sale advertisements")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "Found sale advertisements", content = {
+					@Content(mediaType = "application/json", schema = @Schema(implementation = SaleAdvertisement.class)) }) })
 	@GetMapping
-	public ResponseEntity<List<Object>> getAllAdvertisements(@PathParam("id") Long id, @PathParam("brand") String brand, 
-										@PathParam("type") String type, @PathParam("year") Integer year ) {
+	public ResponseEntity<List<Object>> getAllAdvertisements() {
 		List<Object> response = new ArrayList<>();
-		
-		if (id != null) {
-            return getAdvertisementById(id);
-		} else if(type != null) {
-			return getAdvertisementByType(type);
-		} else if(brand != null) {
-			return getAdvertisementByBrand(brand);
-		} else if (year != null) {
-			return getAdvertisementByProductionYear(year);
-		}
-		
 		response.add(saleAdvertisementService.findAll(Sort.by(Sort.Direction.ASC, "id")));
 		
 		log.info("Listing all sale advertisements");
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 	
-	@GetMapping("{id}")
-	ResponseEntity<List<Object>> getAdvertisementById(Long id) {
+	@Operation(summary = "Get sale advertisements by it's id.")
+	@ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Found advertisement", content = {
+			@Content(mediaType = "application/json", schema = @Schema(implementation = SaleAdvertisement.class)) }) })
+	@GetMapping("/filter-by-id{id}")
+	ResponseEntity<List<Object>> getAdvertisementById(@PathParam("id") Long id) {
 		List<Object> response = new ArrayList<>();
 		Optional<SaleAdvertisement> saleAdvertisementById = saleAdvertisementService.findById(id);
 		
@@ -73,8 +76,11 @@ public class SaleAdvertisementController {
 		}
 	}
 	
-	@GetMapping("{brand}")
-	ResponseEntity<List<Object>> getAdvertisementByBrand(String brand) {
+	@Operation(summary = "Get sale advertisements by brand.")
+	@ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Found advertisements", content = {
+			@Content(mediaType = "application/json", schema = @Schema(implementation = SaleAdvertisement.class)) }) })
+	@GetMapping("/filter-by-brand{brand}")
+	ResponseEntity<List<Object>> getAdvertisementByBrand(@PathParam("brand") String brand) {
 		List<Object> response = new ArrayList<>();
 		List<SaleAdvertisement> saleAdvertisementByBrand = saleAdvertisementService.findByBrand(brand);
 			
@@ -88,8 +94,11 @@ public class SaleAdvertisementController {
 		}
 	}
 	
-	@GetMapping("{type}")
-	ResponseEntity<List<Object>> getAdvertisementByType(String type) {
+	@Operation(summary = "Get sale advertisements by type.")
+	@ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Found advertisements", content = {
+			@Content(mediaType = "application/json", schema = @Schema(implementation = SaleAdvertisement.class)) }) })
+	@GetMapping("/filter-by-type{type}")
+	ResponseEntity<List<Object>> getAdvertisementByType(@PathParam("type") String type) {
 		List<Object> response = new ArrayList<>();
 		List<SaleAdvertisement> saleAdvertisementByType = saleAdvertisementService.findByType(type);
 			
@@ -102,9 +111,12 @@ public class SaleAdvertisementController {
 			return new ResponseEntity<>(response, HttpStatus.OK);
 		}
 	}
-	 
-	@GetMapping("{year}")
-	ResponseEntity<List<Object>> getAdvertisementByProductionYear(int year) {
+	
+	@Operation(summary = "Get sale advertisements by production year.")
+	@ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Found advertisements", content = {
+			@Content(mediaType = "application/json", schema = @Schema(implementation = SaleAdvertisement.class)) }) })
+	@GetMapping("/filter-by-year{year}")
+	ResponseEntity<List<Object>> getAdvertisementByProductionYear(@PathParam("year") Integer year) {
 		List<Object> response = new ArrayList<>();
 		List<SaleAdvertisement> saleAdvertisementByYear = saleAdvertisementService.findByProductionYear(year);
 			
@@ -118,6 +130,26 @@ public class SaleAdvertisementController {
 		}
 	} 
 	
+	@Operation(summary = "Add sale advertisement.")
+	@ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Add sale advertisement", content = {
+			@Content(mediaType = "application/json", examples = @ExampleObject(value = "{\r\n"
+					+ "  \"id\": 0,\r\n"
+					+ "  \"type\": \"string\",\r\n"
+					+ "  \"brand\": \"string\",\r\n"
+					+ "  \"model\": \"string\",\r\n"
+					+ "  \"productionYear\": 0,\r\n"
+					+ "  \"bodyType\": \"string\",\r\n"
+					+ "  \"engineCapacity\": \"string\",\r\n"
+					+ "  \"color\": \"string\",\r\n"
+					+ "  \"additionalFeatures\": \"string\",\r\n"
+					+ "  \"description\": \"string\",\r\n"
+					+ "  \"price\": 0,\r\n"
+					+ "  \"city\": \"string\",\r\n"
+					+ "  \"vinCode\": \"\\b4PXVWN)VD|3(((GR)\\b\",\r\n"
+					+ "  \"vehiclePlateNumber\": \"string\",\r\n"
+					+ "  \"lastTechInspection\": \"string\",\r\n"
+					+ "  \"creationDate\": \"2023-02-15T16:04:36.780Z\" \r\n"
+					+ "}")) }) })
 	@PreAuthorize("hasRole('SELLER')")
 	@PostMapping("/add")
 	ResponseEntity<List<Object>> addAdvertisement(@Valid @RequestBody SaleAdvertisement saleAdvertisement) {
@@ -157,6 +189,11 @@ public class SaleAdvertisementController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 	
+	@Operation(summary = "Delete sale advertisement by id.")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "Delete sale advertisement by id", content = {
+					@Content(mediaType = "application/json", examples = @ExampleObject(value = "[\r\n"
+							+ "  \"Your advertisement has been deleted\"\r\n" + "]")) }) })
 	@PreAuthorize("hasAnyRole('SELLER', 'ADMIN')")
 	@DeleteMapping
 	public ResponseEntity<List<Object>> deleteAdvertisement(@PathParam("id") Long id) {

@@ -35,10 +35,10 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
     	http
     		.authorizeHttpRequests()
-    		.requestMatchers(HttpMethod.GET, "api/v1/").permitAll() 
+    		.requestMatchers(HttpMethod.GET, "api/v1/random-advertisements").permitAll() 
     		.requestMatchers(HttpMethod.POST, "/sign-up").permitAll()
     		.requestMatchers(HttpMethod.POST, "/sign-in").permitAll() 
-    		.requestMatchers(HttpMethod.GET, "/sellers/**", "/sale-advertisements/**").permitAll()
+    		.requestMatchers(HttpMethod.GET, "/sellers/**", "/sale-advertisements/**", "/swagger-ui/**","/v3/api-docs/**").permitAll()
     		.requestMatchers(HttpMethod.DELETE, "/sellers/**").hasRole(Role.ROLE_ADMIN.name())
     		.requestMatchers(HttpMethod.DELETE, "/sale-advertisements/**").hasAnyRole(Role.ROLE_ADMIN.name(), Role.ROLE_SELLER.name())
     		.requestMatchers(HttpMethod.POST, "/sale-advertisements/**", "/sellers/**").hasAnyRole(Role.ROLE_ADMIN.name(), Role.ROLE_SELLER.name())
