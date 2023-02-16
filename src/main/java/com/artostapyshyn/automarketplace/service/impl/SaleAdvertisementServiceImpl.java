@@ -19,7 +19,7 @@ public class SaleAdvertisementServiceImpl implements SaleAdvertisementService {
 	
 	@Override
 	public Optional<SaleAdvertisement> findById(Long id) {
-		return saleAdvertisementRepository.findById(id);
+		return saleAdvertisementRepository.findById(id); 
 	}
 
 	@Override

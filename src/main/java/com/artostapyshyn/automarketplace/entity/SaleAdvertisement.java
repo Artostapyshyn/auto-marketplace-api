@@ -1,16 +1,22 @@
 package com.artostapyshyn.automarketplace.entity;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.Pattern;
@@ -84,6 +90,15 @@ public class SaleAdvertisement {
     @JoinColumn(name = "seller_id")
 	@JsonBackReference
     private Seller seller;
+	
+	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "saleAdvertisement")
+    @JsonManagedReference
+    private List<Image> images = new ArrayList<>();
+	
+	public void addImageToAdvertisement(Image image){
+        image.setSaleAdvertisement(this);
+        images.add(image);
+    }
 	
 	@PrePersist
 	private void init() {

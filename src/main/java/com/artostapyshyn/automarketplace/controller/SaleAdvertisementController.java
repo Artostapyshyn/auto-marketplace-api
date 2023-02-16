@@ -1,5 +1,6 @@
 package com.artostapyshyn.automarketplace.controller;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -15,10 +16,14 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
+import com.artostapyshyn.automarketplace.entity.Image;
 import com.artostapyshyn.automarketplace.entity.SaleAdvertisement;
 import com.artostapyshyn.automarketplace.exceptions.AdvertisementNotFoundException;
+import com.artostapyshyn.automarketplace.service.ImageService;
 import com.artostapyshyn.automarketplace.service.SaleAdvertisementService;
 import com.artostapyshyn.automarketplace.service.SellerService;
 
@@ -41,10 +46,12 @@ import lombok.extern.log4j.Log4j2;
 @AllArgsConstructor
 public class SaleAdvertisementController {
 
-	public final SaleAdvertisementService saleAdvertisementService;
+	private final SaleAdvertisementService saleAdvertisementService;
 	
-	public final SellerService sellerService;
-
+	private final SellerService sellerService;
+	
+	private final ImageService imageService;
+	
 	@Operation(summary = "Get all sale advertisements")
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200", description = "Found sale advertisements", content = {
@@ -159,7 +166,7 @@ public class SaleAdvertisementController {
 		
 		saleAdvertisement.setSeller(sellerService.findByEmail(currentSellerEmail));
 		SaleAdvertisement newSaleAdvertisement = saleAdvertisementService.save(saleAdvertisement);
-		 
+        
 		response.add(newSaleAdvertisement);
 		log.info("New sale advertisement added");
 		
@@ -172,6 +179,54 @@ public class SaleAdvertisementController {
 		return email;
 	}
 	
+	@PreAuthorize("hasAnyRole('SELLER', 'ADMIN')")
+	@GetMapping("/images")
+	public List<Image> listAllImages(@PathParam("id") Long id) {
+		if (id != null)
+			getFileById(id);
+
+		log.info("Listing all images");
+		return imageService.getAllImages().stream().toList();
+	}
+	 
+	@PreAuthorize("hasAnyRole('SELLER', 'ADMIN')")
+	@GetMapping("/images{id}")
+    public ResponseEntity<byte[]> getFileById(Long id) {
+		Optional<Image> imageEntityOptional = imageService.findById(id);
+
+		if (!imageEntityOptional.isPresent()) {
+			return ResponseEntity.notFound().build();
+		}
+		Image image = imageEntityOptional.get();
+		return ResponseEntity.ok().body(image.getData());
+    }
+    
+    @Operation(summary = "Add image for sale advertisement.")
+	@ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Upload successfully", content = {
+			@Content(mediaType = "application/json", schema = @Schema(implementation = SaleAdvertisement.class)) }) })
+    @PreAuthorize("hasRole('SELLER')")
+    @PostMapping("images/add{id}")
+    public ResponseEntity<List<Object>> uploadImage(@RequestParam("image") MultipartFile file, @PathParam("id") Long id) throws IOException {
+		List<Object> response = new ArrayList<>();
+
+		String currentSellerEmail = checkPermission();
+
+		SaleAdvertisement saleAdvertisement = saleAdvertisementService.findById(id).get();
+		if (saleAdvertisement.getSeller().getEmail().equals(currentSellerEmail)) {
+			saleAdvertisement.addImageToAdvertisement(imageService.save(file));
+
+			response.add("Image uploaded successfully " + file.getOriginalFilename());
+			response.add(saleAdvertisement);
+			log.info("Successful upload " + file.getOriginalFilename());
+			return new ResponseEntity<>(response, HttpStatus.OK);
+		} else {
+			response.add("You don't have accsess for this action");
+			return new ResponseEntity<>(response, HttpStatus.FORBIDDEN);
+		}
+		
+    }
+	
+	 
 	@PreAuthorize("hasAnyRole('SELLER', 'ADMIN')")
 	@PostMapping("/edit/{id}")
 	ResponseEntity<List<Object>> editAdvertisement(@Valid @RequestBody SaleAdvertisement saleAdvertisement, @PathParam("id") Long id) {
