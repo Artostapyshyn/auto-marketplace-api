@@ -11,8 +11,6 @@ import org.springframework.stereotype.Service;
 import com.artostapyshyn.automarketplace.entity.Seller;
 import com.artostapyshyn.automarketplace.repository.SellerRepository;
 
-import lombok.AllArgsConstructor;
-
 
 @Service
 public class UserDetailsServiceImpl implements UserDetailsService {

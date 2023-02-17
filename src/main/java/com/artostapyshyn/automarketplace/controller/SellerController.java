@@ -112,6 +112,9 @@ public class SellerController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 	
+	@Operation(summary = "Edit seller information.")
+	@ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Edited successfully", content = {
+			@Content(mediaType = "application/json", schema = @Schema(implementation = Seller.class)) }) }) 
 	@PreAuthorize("hasAnyRole('SELLER', 'ADMIN')")
 	@PostMapping("/edit{id}")
 	ResponseEntity<List<Object>> editSellerInfo(@Valid @RequestBody Seller seller, @PathParam("id") Long id) {

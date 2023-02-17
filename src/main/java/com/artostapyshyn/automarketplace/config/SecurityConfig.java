@@ -35,6 +35,7 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
     	http
     		.authorizeHttpRequests()
+    		.requestMatchers(HttpMethod.GET, "/actuator/**").hasRole(Role.ROLE_ADMIN.name())
     		.requestMatchers(HttpMethod.GET, "api/v1/random-advertisements").permitAll() 
     		.requestMatchers(HttpMethod.POST, "/sign-up").permitAll()
     		.requestMatchers(HttpMethod.POST, "/sign-in").permitAll() 

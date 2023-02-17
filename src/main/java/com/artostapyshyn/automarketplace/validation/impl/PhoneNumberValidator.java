@@ -11,7 +11,7 @@ import lombok.RequiredArgsConstructor;
 public class PhoneNumberValidator implements ConstraintValidator<UniquePhoneNumber, String> {
 	
     private final SellerRepository sellerRepository;
-
+    
     @Override
     public boolean isValid(String phoneNumber, ConstraintValidatorContext constraintValidatorContext) {
         return sellerRepository.findByPhoneNumber(phoneNumber) == null;

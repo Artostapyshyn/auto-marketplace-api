@@ -39,8 +39,7 @@ public class SellerServiceImpl implements SellerService{
 
 	@Override
 	public List<Seller> findAll(Sort sort) {
-		 return sellerRepository.findAll().stream()
-				 .toList();
+		 return sellerRepository.findAll();
 	}
 
 	@Override

@@ -152,7 +152,7 @@ public class SaleAdvertisementController {
 					+ "  \"description\": \"string\",\r\n"
 					+ "  \"price\": 0,\r\n"
 					+ "  \"city\": \"string\",\r\n"
-					+ "  \"vinCode\": \"\\b4PXVWN)VD|3(((GR)\\b\",\r\n"
+					+ "  \"vinCode\": \"5YJSA1DG9DFP14705\",\r\n"
 					+ "  \"vehiclePlateNumber\": \"string\",\r\n"
 					+ "  \"lastTechInspection\": \"string\",\r\n"
 					+ "  \"creationDate\": \"2023-02-15T16:04:36.780Z\" \r\n"
@@ -179,19 +179,22 @@ public class SaleAdvertisementController {
 		return email;
 	}
 	
+	@Operation(summary = "Get all images.")
+	@ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Found successfully", content = {
+			@Content(mediaType = "application/json", schema = @Schema(implementation = Image.class)) }) }) 
 	@PreAuthorize("hasAnyRole('SELLER', 'ADMIN')")
 	@GetMapping("/images")
-	public List<Image> listAllImages(@PathParam("id") Long id) {
-		if (id != null)
-			getFileById(id);
-
+	public List<Image> listAllImages() {
 		log.info("Listing all images");
 		return imageService.getAllImages().stream().toList();
 	}
-	 
+	
+	@Operation(summary = "Get image by id.")
+	@ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Found successfully", content = {
+			@Content(mediaType = "application/json", schema = @Schema(implementation = Image.class)) }) }) 
 	@PreAuthorize("hasAnyRole('SELLER', 'ADMIN')")
 	@GetMapping("/images{id}")
-    public ResponseEntity<byte[]> getFileById(Long id) {
+    public ResponseEntity<byte[]> getImageById(@PathParam("id") Long id) {
 		Optional<Image> imageEntityOptional = imageService.findById(id);
 
 		if (!imageEntityOptional.isPresent()) {
@@ -223,10 +226,11 @@ public class SaleAdvertisementController {
 			response.add("You don't have accsess for this action");
 			return new ResponseEntity<>(response, HttpStatus.FORBIDDEN);
 		}
-		
     }
 	
-	 
+    @Operation(summary = "Edit sale advertisement.")
+	@ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Edited successfully", content = {
+			@Content(mediaType = "application/json", schema = @Schema(implementation = SaleAdvertisement.class)) }) }) 
 	@PreAuthorize("hasAnyRole('SELLER', 'ADMIN')")
 	@PostMapping("/edit/{id}")
 	ResponseEntity<List<Object>> editAdvertisement(@Valid @RequestBody SaleAdvertisement saleAdvertisement, @PathParam("id") Long id) {

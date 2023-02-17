@@ -29,8 +29,7 @@ public class SaleAdvertisementServiceImpl implements SaleAdvertisementService {
 
 	@Override
 	public List<SaleAdvertisement> findAll(Sort sort) {
-		return saleAdvertisementRepository.findAll().stream()
-				.toList();
+		return saleAdvertisementRepository.findAll();
 	}
 
 	@Override
@@ -45,20 +44,17 @@ public class SaleAdvertisementServiceImpl implements SaleAdvertisementService {
 
 	@Override
 	public List<SaleAdvertisement> findByType(String type) {
-		return  saleAdvertisementRepository.findByType(type).stream()
-				.toList();
+		return  saleAdvertisementRepository.findByType(type);
 	}
 
 	@Override
 	public List<SaleAdvertisement> findByBrand(String brand) {
-		return saleAdvertisementRepository.findByBrand(brand).stream()
-				.toList();
+		return saleAdvertisementRepository.findByBrand(brand);
 	}
 
 	@Override
 	public List<SaleAdvertisement> findByProductionYear(int year) {
-		return saleAdvertisementRepository.findByProductionYear(year).stream()
-				.toList();
+		return saleAdvertisementRepository.findByProductionYear(year);
 	}
 
 }

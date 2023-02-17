@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.artostapyshyn.automarketplace.validation.VinCode;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
@@ -19,7 +20,6 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
-import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -72,8 +72,7 @@ public class SaleAdvertisement {
     @Column(name = "city", nullable = false)
     private String city;
     
-    @Pattern(regexp = "\b[(A-H|J-N|P|R-Z|0-9)]{17}\b",
-    message = "Your VIN code is not valid, try again")
+    @VinCode
     @Column(name = "vin_code", nullable = true, unique = true)
     private String vinCode;
 	

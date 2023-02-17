@@ -58,7 +58,7 @@ public class AuthController {
             				+ "]")
              )})  })
     @PostMapping("/sign-in")
-    public ResponseEntity<List<Object>> authenticateUser(@Valid @RequestBody Seller seller){
+    public ResponseEntity<List<Object>> authenticateUser(@RequestBody Seller seller){
     	List<Object> response = new ArrayList<>();
     	
     	try {
