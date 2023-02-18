@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.artostapyshyn.automarketplace.entity.Seller;
+import com.artostapyshyn.automarketplace.enums.Role;
 import com.artostapyshyn.automarketplace.exceptions.SellerNotFoundException;
 import com.artostapyshyn.automarketplace.service.SellerService;
 
@@ -63,7 +64,6 @@ public class SellerController {
 	ResponseEntity<List<Object>> getSellerById(@PathParam("id") Long id) {
 		List<Object> response = new ArrayList<>();
 		Optional<Seller> seller = sellerService.findById(id);
-		
 		if (seller.isEmpty()) {
 			throw new SellerNotFoundException(id.toString());
 		} else {
@@ -122,7 +122,7 @@ public class SellerController {
 
 		Long currentSellerId = checkPermission();
 		
-		if(currentSellerId == id) {
+		if(currentSellerId == id || checkAdminPermission()) {
 		seller.setId(currentSellerId);
 		Seller existingSeller = sellerService.findById(seller.getId()).get();
 
@@ -144,6 +144,12 @@ public class SellerController {
 		Seller s  = sellerService.findByEmail(email);
 		Long currentSellerId = s.getId();
 		return currentSellerId;
+	}
+	
+	private boolean checkAdminPermission() {
+		Authentication loggedInSeller = SecurityContextHolder.getContext().getAuthentication();
+		Object role = loggedInSeller.getAuthorities();
+		return role.equals(Role.ROLE_ADMIN.name());
 	}
 	
 	private void editPersonalInfo(Seller seller, Seller existingSeller) {

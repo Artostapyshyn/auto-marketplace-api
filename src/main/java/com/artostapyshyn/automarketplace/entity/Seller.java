@@ -7,10 +7,12 @@ import com.artostapyshyn.automarketplace.validation.UniqueEmailAddress;
 import com.artostapyshyn.automarketplace.validation.UniquePhoneNumber;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -56,7 +58,7 @@ public class Seller {
     @Column(name = "role", nullable = false)
     private Role role;
     
-    @OneToMany(mappedBy = "seller")
+    @OneToMany(mappedBy = "seller", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonManagedReference
     private Set<SaleAdvertisement> advertisements;
 	 

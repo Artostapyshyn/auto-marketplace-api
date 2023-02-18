@@ -2,7 +2,6 @@ package com.artostapyshyn.automarketplace.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -40,7 +39,7 @@ public class Image {
     @Lob
 	private byte[] data;
     
-    @ManyToOne (cascade = CascadeType.REFRESH, fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "sale_advertisement_id")
     @JsonBackReference
     private SaleAdvertisement saleAdvertisement;

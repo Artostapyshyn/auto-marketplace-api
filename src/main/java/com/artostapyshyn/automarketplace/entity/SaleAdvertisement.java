@@ -37,6 +37,7 @@ public class SaleAdvertisement {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "sale_advertisement_id")
     private Long id; 
 	
     @Column(name = "vehicle_type", nullable = false)
@@ -85,20 +86,15 @@ public class SaleAdvertisement {
 	@Column(name = "creation_date", nullable = false)
 	private LocalDateTime creationDate;
 
-	@ManyToOne
+	@ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "seller_id")
 	@JsonBackReference
     private Seller seller;
 	
-	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "saleAdvertisement")
+	@OneToMany(mappedBy = "saleAdvertisement", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JsonManagedReference
     private List<Image> images = new ArrayList<>();
-	
-	public void addImageToAdvertisement(Image image){
-        image.setSaleAdvertisement(this);
-        images.add(image);
-    }
-	
+	 
 	@PrePersist
 	private void init() {
 		creationDate = LocalDateTime.now();

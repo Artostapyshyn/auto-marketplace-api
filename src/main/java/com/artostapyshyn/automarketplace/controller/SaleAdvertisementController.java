@@ -22,6 +22,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.artostapyshyn.automarketplace.entity.Image;
 import com.artostapyshyn.automarketplace.entity.SaleAdvertisement;
+import com.artostapyshyn.automarketplace.enums.Role;
 import com.artostapyshyn.automarketplace.exceptions.AdvertisementNotFoundException;
 import com.artostapyshyn.automarketplace.service.ImageService;
 import com.artostapyshyn.automarketplace.service.SaleAdvertisementService;
@@ -179,6 +180,61 @@ public class SaleAdvertisementController {
 		return email;
 	}
 	
+	private boolean checkAdminPermission() {
+		Authentication loggedInSeller = SecurityContextHolder.getContext().getAuthentication();
+		Object role = loggedInSeller.getAuthorities();
+		return role.equals(Role.ROLE_ADMIN.name());
+	}
+	
+    @Operation(summary = "Edit sale advertisement.")
+	@ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Edited successfully", content = {
+			@Content(mediaType = "application/json", schema = @Schema(implementation = SaleAdvertisement.class)) }) }) 
+	@PreAuthorize("hasAnyRole('SELLER')")
+	@PostMapping("/edit/{id}")
+	ResponseEntity<List<Object>> editAdvertisement(@Valid @RequestBody SaleAdvertisement saleAdvertisement, @PathParam("id") Long id) {
+		List<Object> response = new ArrayList<>();
+
+		saleAdvertisement.setId(id);
+		SaleAdvertisement saleAdv = saleAdvertisementService.findById(saleAdvertisement.getId()).get();
+
+		edit(saleAdvertisement, saleAdv);
+
+		SaleAdvertisement updatedSaleAdv = saleAdvertisementService.save(saleAdv);
+		response.add(updatedSaleAdv);
+		log.info("Sale advertisement updated");
+		
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+	
+	@Operation(summary = "Delete sale advertisement by id.")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "Delete sale advertisement by id", content = {
+					@Content(mediaType = "application/json", examples = @ExampleObject(value = "[\r\n"
+							+ "  \"Your advertisement has been deleted\"\r\n" + "]")) }) })
+	@PreAuthorize("hasAnyRole('SELLER', 'ADMIN')")
+	@DeleteMapping
+	public ResponseEntity<List<Object>> deleteAdvertisement(@PathParam("id") Long id) {
+		List<Object> response = new ArrayList<>();
+		saleAdvertisementService.findById(id)
+			.orElseThrow(() -> new AdvertisementNotFoundException(id.toString()));
+		
+		String currentSellerEmail = checkPermission();
+		SaleAdvertisement saleAdvertisement = saleAdvertisementService.findById(id).get();
+
+		if (saleAdvertisement.getSeller().getEmail().equals(currentSellerEmail) || checkAdminPermission()) {
+			saleAdvertisementService.deleteById(id);
+
+			response.add("Your advertisement has been deleted");
+			log.info("Sale advertisement - " + id + " has been deleted");
+
+			return new ResponseEntity<>(response, HttpStatus.ACCEPTED);
+		} else {
+			response.add("You don't have accsess for this action");
+			return new ResponseEntity<>(response, HttpStatus.FORBIDDEN);
+		}
+	
+	}
+	
 	@Operation(summary = "Get all images.")
 	@ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Found successfully", content = {
 			@Content(mediaType = "application/json", schema = @Schema(implementation = Image.class)) }) }) 
@@ -216,8 +272,9 @@ public class SaleAdvertisementController {
 
 		SaleAdvertisement saleAdvertisement = saleAdvertisementService.findById(id).get();
 		if (saleAdvertisement.getSeller().getEmail().equals(currentSellerEmail)) {
-			saleAdvertisement.addImageToAdvertisement(imageService.save(file));
-
+			
+			addImageToAdvertisement(file, saleAdvertisement);
+			
 			response.add("Image uploaded successfully " + file.getOriginalFilename());
 			response.add(saleAdvertisement);
 			log.info("Successful upload " + file.getOriginalFilename());
@@ -227,45 +284,37 @@ public class SaleAdvertisementController {
 			return new ResponseEntity<>(response, HttpStatus.FORBIDDEN);
 		}
     }
-	
-    @Operation(summary = "Edit sale advertisement.")
-	@ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Edited successfully", content = {
-			@Content(mediaType = "application/json", schema = @Schema(implementation = SaleAdvertisement.class)) }) }) 
-	@PreAuthorize("hasAnyRole('SELLER', 'ADMIN')")
-	@PostMapping("/edit/{id}")
-	ResponseEntity<List<Object>> editAdvertisement(@Valid @RequestBody SaleAdvertisement saleAdvertisement, @PathParam("id") Long id) {
-		List<Object> response = new ArrayList<>();
-
-		saleAdvertisement.setId(id);
-		SaleAdvertisement saleAdv = saleAdvertisementService.findById(saleAdvertisement.getId()).get();
-
-		edit(saleAdvertisement, saleAdv);
-
-		SaleAdvertisement updatedSaleAdv = saleAdvertisementService.save(saleAdv);
-		response.add(updatedSaleAdv);
-		log.info("Sale advertisement updated");
-		
-		return new ResponseEntity<>(response, HttpStatus.OK);
+    
+	private void addImageToAdvertisement(MultipartFile file, SaleAdvertisement saleAdvertisement) throws IOException {
+		Image image = toImageEntity(file);
+		image.setSaleAdvertisement(saleAdvertisement);
+		saleAdvertisement.getImages().add(image);
+		saleAdvertisementService.save(saleAdvertisement);
 	}
 	
-	@Operation(summary = "Delete sale advertisement by id.")
+	@Operation(summary = "Delete image by id.")
 	@ApiResponses(value = {
-			@ApiResponse(responseCode = "200", description = "Delete sale advertisement by id", content = {
+			@ApiResponse(responseCode = "200", description = "Delete image by id", content = {
 					@Content(mediaType = "application/json", examples = @ExampleObject(value = "[\r\n"
-							+ "  \"Your advertisement has been deleted\"\r\n" + "]")) }) })
-	@PreAuthorize("hasAnyRole('SELLER', 'ADMIN')")
-	@DeleteMapping
-	public ResponseEntity<List<Object>> deleteAdvertisement(@PathParam("id") Long id) {
+							+ "  \"Image has been deleted\"\r\n" + "]")) }) })
+	@PreAuthorize("hasAnyRole('SELLER')")
+	@DeleteMapping("images/delete{id}")
+	public ResponseEntity<List<Object>> deleteImage(@PathParam("id") Long id) {
 		List<Object> response = new ArrayList<>();
-		saleAdvertisementService.findById(id)
-			.orElseThrow(() -> new AdvertisementNotFoundException(id.toString()));
-
-		saleAdvertisementService.deleteById(id);
-		 
-		response.add("Your advertisement has been deleted");
-		log.info("Sale advertisement - " + id + " has been deleted");
 		
-		return new ResponseEntity<>(response, HttpStatus.ACCEPTED);
+		if (checkAdminPermission()) {
+			imageService.findById(id)
+				.orElseThrow(() -> new RuntimeException("Couldn't find image with id - " + id.toString()));
+
+			imageService.deleteById(id);
+			response.add("Image has been deleted");
+			log.info("Image - " + id + " has been deleted");
+		
+			return new ResponseEntity<>(response, HttpStatus.ACCEPTED);
+		} else {
+			response.add("You don't have accsess for this action");
+			return new ResponseEntity<>(response, HttpStatus.FORBIDDEN);
+		}
 	}
 	
 	private void edit(SaleAdvertisement saleAdvertisement, SaleAdvertisement existingSaleAdvertisement) {
@@ -281,4 +330,13 @@ public class SaleAdvertisementController {
 		existingSaleAdvertisement.setType(saleAdvertisement.getBodyType());
 		existingSaleAdvertisement.setModel(saleAdvertisement.getModel());
 	} 
+	
+	private Image toImageEntity(MultipartFile file) throws IOException {
+		Image image = new Image();
+		image.setName(file.getName());
+		image.setContentType(file.getContentType());
+		image.setSize(file.getSize());
+		image.setData(file.getBytes());
+		return image;
+	}
 }
