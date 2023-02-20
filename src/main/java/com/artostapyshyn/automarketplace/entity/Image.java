@@ -2,6 +2,7 @@ package com.artostapyshyn.automarketplace.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -30,13 +31,17 @@ public class Image {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
+	@Column(name = "image_name", nullable = false)
 	private String name;
-
+	
+	@Column(name = "image_content_type", nullable = false)
 	private String contentType;
 
+	@Column(name = "image_size", nullable = false)
 	private Long size;
 
     @Lob
+    @Column(name = "image_data", nullable = false)
 	private byte[] data;
     
     @ManyToOne(fetch = FetchType.LAZY)
