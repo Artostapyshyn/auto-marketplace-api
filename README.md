@@ -33,12 +33,13 @@ It's RESTful API for selling vehicles with, personal/advertisement information m
 | `POST`   | `/api/v1/sale-advertisements/edit{id}`                 | Edit sale advertisement information.                 |
 | `POST`   | `/api/v1/sale-advertisements/images/add{id}`                 | Add sale advertisement image.                 |
 | `DELETE` | `/api/v1/sale-advertisements{id}` | Delete sale advertisement by id.                    |
-| `DELETE` | `/api/v1/sale-advertisements/images{id}` | Delete sale advertisement by id.                    |
+| `DELETE` | `/api/v1/sale-advertisements/images{id}` | Delete sale advertisement image by id.                    |
 ### Random controller
 | Method   | URL                                      | Description                              |
 | -------- | ---------------------------------------- | ---------------------------------------- |
 | `GET`    | `/api/v1/random-advertisements`                            | Retrive 15 random advertisements.                      |
-Also you can get detailed documentation by accessing /swagger-ui/index.html#/
+
+Also you can get detailed documentation by accessing `/swagger-ui/index.html#/`
 
 ## How to start:
 1. Clone the repository
