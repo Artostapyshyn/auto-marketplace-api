@@ -3,6 +3,9 @@ package com.artostapyshyn.automarketplace.entity;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+
+import org.hibernate.Hibernate;
 
 import com.artostapyshyn.automarketplace.validation.VinCode;
 import com.fasterxml.jackson.annotation.JsonBackReference;
@@ -99,4 +102,17 @@ public class SaleAdvertisement {
 	private void init() {
 		creationDate = LocalDateTime.now();
 	}
+	
+	@Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || Hibernate.getClass(this) != Hibernate.getClass(o)) return false;
+        SaleAdvertisement saleAdvertisement = (SaleAdvertisement) o;
+        return id != null && Objects.equals(id, saleAdvertisement.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
 }

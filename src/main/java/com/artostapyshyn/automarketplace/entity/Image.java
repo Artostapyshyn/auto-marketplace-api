@@ -1,5 +1,9 @@
 package com.artostapyshyn.automarketplace.entity;
 
+import java.util.Objects;
+
+import org.hibernate.Hibernate;
+
 import com.fasterxml.jackson.annotation.JsonBackReference;
 
 import jakarta.persistence.Column;
@@ -48,4 +52,17 @@ public class Image {
     @JoinColumn(name = "sale_advertisement_id")
     @JsonBackReference
     private SaleAdvertisement saleAdvertisement;
+    
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || Hibernate.getClass(this) != Hibernate.getClass(o)) return false;
+        Image image = (Image) o;
+        return id != null && Objects.equals(id, image.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
 }

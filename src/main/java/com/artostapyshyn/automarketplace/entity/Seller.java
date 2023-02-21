@@ -1,6 +1,9 @@
 package com.artostapyshyn.automarketplace.entity;
 
+import java.util.Objects;
 import java.util.Set;
+
+import org.hibernate.Hibernate;
 
 import com.artostapyshyn.automarketplace.enums.Role;
 import com.artostapyshyn.automarketplace.validation.UniqueEmailAddress;
@@ -62,4 +65,16 @@ public class Seller {
     @JsonManagedReference
     private Set<SaleAdvertisement> advertisements;
 	 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || Hibernate.getClass(this) != Hibernate.getClass(o)) return false;
+        Seller seller = (Seller) o;
+        return id != null && Objects.equals(id, seller.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
 }
