@@ -3,8 +3,6 @@ package com.artostapyshyn.automarketplace.service;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.data.domain.Sort;
-
 import com.artostapyshyn.automarketplace.entity.SaleAdvertisement;
 
 public interface SaleAdvertisementService {
@@ -18,7 +16,7 @@ public interface SaleAdvertisementService {
 	
 	SaleAdvertisement save(SaleAdvertisement saleAdvertisement);
 
-	List<SaleAdvertisement> findAll(Sort sort);
+	List<SaleAdvertisement> findAll();
 	
 	List<SaleAdvertisement> generateRandomSaleAdvertisements();
 	

@@ -15,6 +15,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.stubbing.OngoingStubbing;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
@@ -51,9 +52,10 @@ public class SaleAdvertisementServiceTest {
 		advertisements.add(saleAdvertisement2);
 	}
 
+	@SuppressWarnings("unchecked")
 	@Test
 	public void testGetAllSaleAdvertisements() throws Exception {
-		when(saleAdvertisementService.findAll(null)).thenReturn(advertisements);
+		when(((OngoingStubbing<List<SaleAdvertisement>>) saleAdvertisementService.findAll()).thenReturn(advertisements));
 
         assertEquals(advertisements.size(), 2);
         assertEquals(advertisements.get(0).getPrice(), 68000);

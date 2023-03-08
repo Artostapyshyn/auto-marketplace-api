@@ -1,11 +1,9 @@
 package com.artostapyshyn.automarketplace.controller;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -16,15 +14,11 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
 
-import com.artostapyshyn.automarketplace.entity.Image;
 import com.artostapyshyn.automarketplace.entity.SaleAdvertisement;
 import com.artostapyshyn.automarketplace.enums.Role;
 import com.artostapyshyn.automarketplace.exceptions.AdvertisementNotFoundException;
-import com.artostapyshyn.automarketplace.service.ImageService;
 import com.artostapyshyn.automarketplace.service.SaleAdvertisementService;
 import com.artostapyshyn.automarketplace.service.SellerService;
 
@@ -51,8 +45,6 @@ public class SaleAdvertisementController {
 	
 	private final SellerService sellerService;
 	
-	private final ImageService imageService;
-	
 	@Operation(summary = "Get all sale advertisements")
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200", description = "Found sale advertisements", content = {
@@ -60,7 +52,7 @@ public class SaleAdvertisementController {
 	@GetMapping
 	public ResponseEntity<List<Object>> getAllAdvertisements() {
 		List<Object> response = new ArrayList<>();
-		response.add(saleAdvertisementService.findAll(Sort.by(Sort.Direction.ASC, "id")));
+		response.add(saleAdvertisementService.findAll());
 		
 		log.info("Listing all sale advertisements");
 		return new ResponseEntity<>(response, HttpStatus.OK);
@@ -235,88 +227,6 @@ public class SaleAdvertisementController {
 	
 	}
 	
-	@Operation(summary = "Get all images.")
-	@ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Found successfully", content = {
-			@Content(mediaType = "application/json", schema = @Schema(implementation = Image.class)) }) }) 
-	@PreAuthorize("hasAnyRole('SELLER', 'ADMIN')")
-	@GetMapping("/images")
-	public List<Image> listAllImages() {
-		log.info("Listing all images");
-		return imageService.getAllImages().stream().toList();
-	}
-	
-	@Operation(summary = "Get image by id.")
-	@ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Found successfully", content = {
-			@Content(mediaType = "application/json", schema = @Schema(implementation = Image.class)) }) }) 
-	@PreAuthorize("hasAnyRole('SELLER', 'ADMIN')")
-	@GetMapping("/images{id}")
-    public ResponseEntity<byte[]> getImageById(@PathParam("id") Long id) {
-		Optional<Image> imageEntityOptional = imageService.findById(id);
-
-		if (!imageEntityOptional.isPresent()) {
-			return ResponseEntity.notFound().build();
-		}
-		Image image = imageEntityOptional.get();
-		return ResponseEntity.ok().body(image.getData());
-    }
-    
-    @Operation(summary = "Add image for sale advertisement.")
-	@ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Upload successfully", content = {
-			@Content(mediaType = "application/json", schema = @Schema(implementation = SaleAdvertisement.class)) }) })
-    @PreAuthorize("hasRole('SELLER')")
-    @PostMapping("images/add{id}")
-    public ResponseEntity<List<Object>> uploadImage(@RequestParam("image") MultipartFile file, @PathParam("id") Long id) throws IOException {
-		List<Object> response = new ArrayList<>();
-
-		String currentSellerEmail = checkPermission();
-
-		SaleAdvertisement saleAdvertisement = saleAdvertisementService.findById(id).get();
-		if (saleAdvertisement.getSeller().getEmail().equals(currentSellerEmail)) {
-			
-			addImageToAdvertisement(file, saleAdvertisement);
-			
-			response.add("Image uploaded successfully " + file.getOriginalFilename());
-			response.add(saleAdvertisement);
-			log.info("Successful upload " + file.getOriginalFilename());
-			return new ResponseEntity<>(response, HttpStatus.OK);
-		} else {
-			response.add("You don't have accsess for this action");
-			return new ResponseEntity<>(response, HttpStatus.FORBIDDEN);
-		}
-    }
-    
-	private void addImageToAdvertisement(MultipartFile file, SaleAdvertisement saleAdvertisement) throws IOException {
-		Image image = toImageEntity(file);
-		image.setSaleAdvertisement(saleAdvertisement);
-		saleAdvertisement.getImages().add(image);
-		saleAdvertisementService.save(saleAdvertisement);
-	}
-	
-	@Operation(summary = "Delete image by id.")
-	@ApiResponses(value = {
-			@ApiResponse(responseCode = "200", description = "Delete image by id", content = {
-					@Content(mediaType = "application/json", examples = @ExampleObject(value = "[\r\n"
-							+ "  \"Image has been deleted\"\r\n" + "]")) }) })
-	@PreAuthorize("hasAnyRole('SELLER')")
-	@DeleteMapping("images/delete{id}")
-	public ResponseEntity<List<Object>> deleteImage(@PathParam("id") Long id) {
-		List<Object> response = new ArrayList<>();
-		
-		if (checkAdminPermission()) {
-			imageService.findById(id)
-				.orElseThrow(() -> new RuntimeException("Couldn't find image with id - " + id.toString()));
-
-			imageService.deleteById(id);
-			response.add("Image has been deleted");
-			log.info("Image - " + id + " has been deleted");
-		
-			return new ResponseEntity<>(response, HttpStatus.ACCEPTED);
-		} else {
-			response.add("You don't have accsess for this action");
-			return new ResponseEntity<>(response, HttpStatus.FORBIDDEN);
-		}
-	}
-	
 	private void edit(SaleAdvertisement saleAdvertisement, SaleAdvertisement existingSaleAdvertisement) {
 		existingSaleAdvertisement.setAdditionalFeatures(saleAdvertisement.getAdditionalFeatures());
 		existingSaleAdvertisement.setBodyType(saleAdvertisement.getBodyType());
@@ -330,13 +240,4 @@ public class SaleAdvertisementController {
 		existingSaleAdvertisement.setType(saleAdvertisement.getBodyType());
 		existingSaleAdvertisement.setModel(saleAdvertisement.getModel());
 	} 
-	
-	private Image toImageEntity(MultipartFile file) throws IOException {
-		Image image = new Image();
-		image.setName(file.getName());
-		image.setContentType(file.getContentType());
-		image.setSize(file.getSize());
-		image.setData(file.getBytes());
-		return image;
-	}
 }
